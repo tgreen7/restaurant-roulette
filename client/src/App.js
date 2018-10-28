@@ -63,7 +63,7 @@ class App extends Component {
 
   clearList = async () => {
     const shouldClear = await showConfirmationDialog({
-      text: "Are you sure you would like to clear the list!"
+      text: "Are you sure you would like to clear the list?"
     });
     if (shouldClear) {
       this.setState({
@@ -139,6 +139,18 @@ class App extends Component {
     }));
   };
 
+  hasCurrentLocation = () => {
+    return this.props.coords;
+  };
+
+  switchToCurrentLocation = () => {
+    this.setState({
+      latitude: undefined,
+      longitude: undefined,
+      formatted_address: undefined
+    });
+  };
+
   getLatLng = () => {
     const { latitude, longitude } = this.state;
     const { coords } = this.props;
@@ -197,10 +209,12 @@ class App extends Component {
     });
     try {
       const res = await geocodeByAddress(address);
+      const { formatted_address } = res[0];
       const { lat, lng } = await getLatLng(res[0]);
       this.setState({
         latitude: lat,
-        longitude: lng
+        longitude: lng,
+        formatted_address
       });
     } catch (error) {
       console.error("error:", error);
@@ -218,7 +232,8 @@ class App extends Component {
       restaurantOption,
       addingRestaurant,
       isGeocoding,
-      loadingInitialList
+      loadingInitialList,
+      formatted_address
     } = this.state;
 
     const { usingCurrentLocation } = this.getLatLng() || {};
@@ -236,13 +251,22 @@ class App extends Component {
               {!this.getLatLng() && (
                 <BlueprintError error="Please choose a location or enable location services." />
               )}
-              {usingCurrentLocation && (
+              {(usingCurrentLocation || formatted_address) && (
                 <div
                   className={classNames(Classes.TEXT_MUTED, Classes.TEXT_SMALL)}
                 >
-                  Using Current Location
+                  {formatted_address || "Using Current Location"}
                 </div>
               )}
+              {!usingCurrentLocation &&
+                this.hasCurrentLocation() && (
+                  <Button
+                    style={{ marginTop: 15 }}
+                    intent="primary"
+                    text="Use Current Location"
+                    onClick={this.switchToCurrentLocation}
+                  />
+                )}
             </div>
             <div style={{ color: "black" }}>
               <FormGroup label="Select Restaurant:">
