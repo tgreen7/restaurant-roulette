@@ -262,7 +262,10 @@ class App extends Component {
             />
           </div>
           <div style={{ marginLeft: 40 }}>
-            <RestaurantList restaurantList={restaurantList} />
+            <RestaurantList
+              restaurantList={restaurantList}
+              removeRestaurant={this.removeRestaurant}
+            />
 
             <div className={Classes.DIALOG_FOOTER} style={{ marginTop: 20 }}>
               <div className={Classes.DIALOG_FOOTER_ACTIONS}>

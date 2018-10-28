@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@blueprintjs/core";
 import Rating from "./Rating";
 
-function RestaurantList({ restaurantList = [] }) {
+function RestaurantList({ restaurantList = [], removeRestaurant }) {
   if (!restaurantList.length) return null;
   return (
     <div className="restaurant-list">
@@ -24,7 +24,7 @@ function RestaurantList({ restaurantList = [] }) {
                 small
                 icon="trash"
                 intent="danger"
-                onClick={() => this.removeRestaurant(i)}
+                onClick={() => removeRestaurant(i)}
               />
               <div
                 style={{
