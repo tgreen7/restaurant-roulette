@@ -1,5 +1,7 @@
-var express = require("express");
-var app = express();
+const path = require("path");
+const express = require("express");
+
+const app = express();
 const yelpFusion = require("yelp-fusion");
 
 const port = process.env.PORT || 5000;
@@ -9,7 +11,7 @@ const yelpAPIKey =
 
 const yelpClient = yelpFusion.client(yelpAPIKey);
 
-app.listen(port, () => console.log(`Listening on port ${port}`));
+app.listen(port, () => console.info(`Listening on port ${port}`));
 
 app.get("/yelp-business", async (req, res) => {
   try {
@@ -36,3 +38,12 @@ app.get("/autocomplete-yelp-suggestions", async (req, res) => {
     res.status(500).send("Error fetching suggestions");
   }
 });
+
+if (process.env.NODE_ENV === "production") {
+  // Serve any static files
+  app.use(express.static(path.join(__dirname, "client/build")));
+  // Handle React routing, return all requests to React app
+  app.get("*", function(req, res) {
+    res.sendFile(path.join(__dirname, "../client/build", "index.html"));
+  });
+}
