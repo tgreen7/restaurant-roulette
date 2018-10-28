@@ -1,0 +1,19 @@
+.app {
+  padding: 120px;
+  padding-top: 50px;
+}
+
+.restaurant-list {
+  max-height: 300px;
+  max-width: 400px;
+  overflow: auto;
+  color: #333;
+  border: 1px solid #a7b6c2;
+  border-radius: 5px;
+}
+
+.restaurant-list-item {
+  padding: 10px;
+  background: white;
+  border-bottom: 1px solid #efefef;
+}
