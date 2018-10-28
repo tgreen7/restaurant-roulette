@@ -67,7 +67,8 @@ class App extends Component {
     });
     if (shouldClear) {
       this.setState({
-        restaurantList: []
+        restaurantList: [],
+        chosenRestaurant: null
       });
     }
   };
@@ -280,13 +281,13 @@ class App extends Component {
                 />
               </div>
             </div>
+            {chosenRestaurant && (
+              <div style={{ marginTop: 25 }}>
+                You are going to:
+                <h2>{chosenRestaurant}</h2>
+              </div>
+            )}
           </div>
-          {chosenRestaurant && (
-            <div style={{ marginTop: 25 }}>
-              You are going to:
-              <h2>{chosenRestaurant}</h2>
-            </div>
-          )}
         </div>
       </div>
     );

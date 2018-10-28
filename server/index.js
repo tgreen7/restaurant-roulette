@@ -26,7 +26,7 @@ app.get("/yelp-business", async (req, res) => {
 
 app.get("/autocomplete-yelp-suggestions", async (req, res) => {
   try {
-    const { latitude, longitude, text } = req.query;
+    const { latitude, longitude, text } = getAutocompleteQuery(req.query);
     const restaurants = await yelpClient.autocomplete({
       text,
       latitude,
@@ -46,4 +46,18 @@ if (process.env.NODE_ENV === "production") {
   app.get("*", function(req, res) {
     res.sendFile(path.join(__dirname, "../client/build", "index.html"));
   });
+}
+
+function getAutocompleteQuery(query) {
+  if (process.env.NODE_ENV === "production") {
+    return query;
+  } else {
+    // fix the latitude and longitude because the maps api fails
+    // without adding localhost
+    return {
+      ...query,
+      latitude: "37.763397",
+      longitude: "-122.398627"
+    };
+  }
 }
