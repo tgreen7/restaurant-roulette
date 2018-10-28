@@ -7,7 +7,7 @@
     }
   },
   "lint-staged": {
-    "client/src/**/*.js|tg-iso-lims/src/**/*.js": [
+    "client/src/**/*.js": [
       "eslint --rule 'import/order: 1' --rule 'react/jsx-curly-brace-presence: 1' --fix --max-warnings=0",
       "prettier --write",
       "git add"
@@ -15,10 +15,24 @@
     "client/src/**/*.css": [
       "prettier --write",
       "git add"
+    ],
+    "server/**/*.js": [
+      "eslint --rule 'import/order: 1' --rule 'react/jsx-curly-brace-presence: 1' --fix --max-warnings=0",
+      "prettier --write",
+      "git add"
     ]
   },
   "private": true,
   "devDependencies": {
+    "babel-eslint": "^8.2.6",
+    "eslint": "^5.5.0",
+    "eslint-config-react-app": "^3.0.4",
+    "eslint-config-teselagen": "^4.0.12",
+    "eslint-plugin-flowtype": "^2.50.0",
+    "eslint-plugin-graphql": "^2.1.1",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "5.1.1",
+    "eslint-plugin-react": "^7.11.1",
     "husky": "^1.1.2",
     "lint-staged": "^7.2.2",
     "prettier": "^1.14.2"
