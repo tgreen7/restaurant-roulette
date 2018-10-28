@@ -84,7 +84,7 @@ class SearchBar extends React.Component {
                       const className = classNames("Demo__suggestion-item", {
                         "Demo__suggestion-item--active": suggestion.active
                       });
-
+                      /* eslint-disable react/jsx-key */
                       return (
                         <div
                           {...getSuggestionItemProps(suggestion, { className })}
@@ -97,6 +97,7 @@ class SearchBar extends React.Component {
                           </small>
                         </div>
                       );
+                      /* eslint-enable react/jsx-key */
                     })}
                   </div>
                 )}
