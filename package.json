@@ -1,0 +1,26 @@
+{
+  "name": "restaurant-roulette",
+  "version": "0.1.0",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "client/src/**/*.js|tg-iso-lims/src/**/*.js": [
+      "eslint --rule 'import/order: 1' --rule 'react/jsx-curly-brace-presence: 1' --fix --max-warnings=0",
+      "prettier --write",
+      "git add"
+    ],
+    "client/src/**/*.css": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "private": true,
+  "devDependencies": {
+    "husky": "^1.1.2",
+    "lint-staged": "^7.2.2",
+    "prettier": "^1.14.2"
+  }
+}
