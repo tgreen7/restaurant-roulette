@@ -39,7 +39,7 @@ function RestaurantList({ restaurantList = [], removeRestaurant }) {
                   rel="noopener noreferrer"
                   href={restaurant.url}
                 >
-                  {restaurant.name} aowegjeiaowgjeoiwg
+                  {restaurant.name}
                 </a>
               </div>
             </div>
