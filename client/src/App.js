@@ -10,55 +10,75 @@ import classNames from "classnames";
 import LocationSearch from "./components/LocationSearch";
 import toastr from "./components/toastr";
 import BlueprintError from "./components/BlueprintError";
-import { getRestaurant } from "./utils";
+import {
+  getRestaurant,
+  saveStateToLocalStorage,
+  saveListToStorage
+} from "./utils";
 import RestaurantList from "./components/RestaurantList";
-import "./App.css";
+import SaveListDialog from "./components/SaveListDialog";
 import showConfirmationDialog from "./components/showConfirmationDialog";
+import LoadListDialog from "./components/LoadListDialog";
+import "./App.css";
 
 // register toastr
 toastr();
 
+const LOCAL_STORAGE_LIST_NAMES = "saved-restaurant-list-names";
+
 class App extends Component {
   state = {
     restaurantList: [],
+    savedListNames: [],
     restaurantOption: "",
     chosenRestaurant: undefined,
     addingRestaurant: false,
     latitude: undefined,
     longitude: undefined,
-    loadingInitialList: false
+    loadingInitialList: false,
+    isSaveDialogOpen: false,
+    isLoadDialogOpen: false
   };
 
-  async componentDidMount() {
+  componentDidMount() {
     document.body.classList.add(Classes.DARK);
-    let restaurantIds = localStorage.getItem("restaurantList");
-    if (restaurantIds) restaurantIds = JSON.parse(restaurantIds);
-    if (restaurantIds && restaurantIds.length) {
+    try {
+      let savedListNames = localStorage.getItem(LOCAL_STORAGE_LIST_NAMES);
+      if (savedListNames) savedListNames = JSON.parse(savedListNames);
       this.setState({
-        loadingInitialList: true
+        savedListNames: savedListNames || []
       });
-      try {
-        const restaurants = await Promise.map(restaurantIds, async id => {
-          return await getRestaurant(id);
-        });
-        this.addRestaurantToState(restaurants);
-      } catch (error) {
-        console.error("error:", error);
-        window.toastr.error("Error loading old options.");
-      }
-      this.setState({
-        loadingInitialList: false
-      });
+      this.loadListFromStorage();
+    } catch (error) {
+      console.error("error:", error);
+      window.toastr.error("Error loading old lists.");
     }
   }
 
-  async componentDidUpdate() {
-    const { restaurantList } = this.state;
-    const restaurantIds = restaurantList.reduce((acc, r) => {
-      if (r && r.id) acc.push(r.id);
-      return acc;
-    }, []);
-    localStorage.setItem("restaurantList", JSON.stringify(restaurantIds));
+  loadListFromStorage = async (listName = "restaurantList") => {
+    this.setState({
+      loadingInitialList: true
+    });
+    try {
+      let restaurantIds = localStorage.getItem(listName);
+      if (restaurantIds) restaurantIds = JSON.parse(restaurantIds);
+      if (restaurantIds && restaurantIds.length) {
+        const restaurants = await Promise.map(restaurantIds, async id => {
+          return await getRestaurant(id);
+        });
+        this.addRestaurantToState(restaurants, true);
+      }
+    } catch (error) {
+      console.error("error:", error);
+      window.toastr.error("Error loading old options.");
+    }
+    this.setState({
+      loadingInitialList: false
+    });
+  };
+
+  componentDidUpdate() {
+    saveStateToLocalStorage(this.state);
   }
 
   clearList = async () => {
@@ -73,12 +93,12 @@ class App extends Component {
     }
   };
 
-  addRestaurantToState = restaurantOrRestaurants => {
+  addRestaurantToState = (restaurantOrRestaurants, shouldWipe) => {
     const { restaurantList } = this.state;
     const restaurants = Array.isArray(restaurantOrRestaurants)
       ? restaurantOrRestaurants
       : [restaurantOrRestaurants];
-    let newList = [...restaurantList];
+    const newList = shouldWipe ? [] : [...restaurantList];
 
     restaurants.forEach(restaurant => {
       if (
@@ -225,6 +245,46 @@ class App extends Component {
     });
   };
 
+  toggleSaveDialog = () => {
+    this.setState({
+      isSaveDialogOpen: !this.state.isSaveDialogOpen
+    });
+  };
+
+  toggleLoadDialog = () => {
+    this.setState({
+      isLoadDialogOpen: !this.state.isLoadDialogOpen
+    });
+  };
+
+  onSaveList = name => {
+    const { savedListNames = [] } = this.state;
+    saveListToStorage(this.state.restaurantList, name);
+    if (!savedListNames.includes(name)) {
+      const newSavedListNames = [...savedListNames, name];
+      this.setState({
+        savedListNames: newSavedListNames
+      });
+      localStorage.setItem(
+        LOCAL_STORAGE_LIST_NAMES,
+        JSON.stringify(newSavedListNames)
+      );
+    }
+  };
+
+  removeItemFromSavedList = name => {
+    const { savedListNames = [] } = this.state;
+    const newSavedListNames = savedListNames.filter(n => n !== name);
+    this.setState({
+      savedListNames: newSavedListNames
+    });
+    localStorage.setItem(
+      LOCAL_STORAGE_LIST_NAMES,
+      JSON.stringify(newSavedListNames)
+    );
+    localStorage.removeItem(name);
+  };
+
   render() {
     const {
       restaurantList,
@@ -233,7 +293,10 @@ class App extends Component {
       addingRestaurant,
       isGeocoding,
       loadingInitialList,
-      formatted_address
+      formatted_address,
+      isSaveDialogOpen,
+      isLoadDialogOpen,
+      savedListNames
     } = this.state;
 
     const { usingCurrentLocation } = this.getLatLng() || {};
@@ -300,6 +363,19 @@ class App extends Component {
                   onClick={this.clearList}
                 />
                 <Button
+                  text="Save List"
+                  intent="success"
+                  loading={loadingInitialList}
+                  onClick={this.toggleSaveDialog}
+                  disabled={!restaurantList.length}
+                />
+                <Button
+                  text="Load List"
+                  loading={loadingInitialList}
+                  disabled={!savedListNames.length}
+                  onClick={this.toggleLoadDialog}
+                />
+                <Button
                   loading={loadingInitialList}
                   disabled={!restaurantList.length}
                   intent="primary"
@@ -316,6 +392,18 @@ class App extends Component {
             )}
           </div>
         </div>
+        <SaveListDialog
+          isOpen={isSaveDialogOpen}
+          onSave={this.onSaveList}
+          handleClose={this.toggleSaveDialog}
+        />
+        <LoadListDialog
+          isOpen={isLoadDialogOpen}
+          removeItem={this.removeItemFromSavedList}
+          options={savedListNames.map(name => ({ value: name, label: name }))}
+          onSelect={this.loadListFromStorage}
+          handleClose={this.toggleLoadDialog}
+        />
       </div>
     );
   }
